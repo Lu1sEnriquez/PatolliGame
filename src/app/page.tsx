@@ -1,101 +1,112 @@
-import Image from "next/image";
+"use client"
+import { useEffect, useRef } from "react";
+import { ToggleTheme } from "@/components/theme/ToggleTheme";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import useSound from "@/hooks/useSound";
+import SoundSettings from "@/components/gameMenu/SoundSettings";
+import { useAudioStore } from "@/store/menu/AudioStore";
+import { DialogPartida } from "@/components/gameMenu/DialogPartida";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const { playSound } = useSound();
+  const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
+  const { isMusicEnabled, musicVolume } = useAudioStore();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Función para reproducir el sonido de hover
+  const handleHover = () => {
+    playSound("/sounds/hover.mp3");
+  };
+
+  // Función para reproducir el sonido de click
+  const handleClick = () => {
+    playSound("/sounds/click.mp3");
+  };
+
+  useEffect(() => {
+    // Inicializar la música de fondo si aún no se ha hecho
+    if (!backgroundMusicRef.current) {
+      backgroundMusicRef.current = new Audio("/sounds/music-background.mp3");
+      backgroundMusicRef.current.loop = true;
+    }
+
+    // Configurar el volumen
+    backgroundMusicRef.current.volume = musicVolume;
+
+    // Reproducir la música si está habilitada
+    if (backgroundMusicRef.current) {
+      backgroundMusicRef.current.play().catch((error) => {
+        alert(error)
+        console.error("Error al intentar reproducir la música:", error);
+      });
+    } else {
+      backgroundMusicRef.current.pause();
+    }
+
+    // Limpiar el efecto al desmontar
+    return () => {
+      backgroundMusicRef.current?.pause();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Reproducir o pausar la música según el estado
+    if (isMusicEnabled) {
+      backgroundMusicRef.current?.play().catch((error) => {
+        console.error("Error al intentar reproducir la música:", error);
+      });
+    } else {
+      backgroundMusicRef.current?.pause();
+    }
+  }, [isMusicEnabled, musicVolume]);
+
+  return (
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 dark:bg-gray-900 bg-[url('/imgs/patolli.jpg')] bg-auto bg-center">
+      {/* Cabecera del juego */}
+      <Card className="p-6 mb-8 w-full max-w-md flex justify-between items-center shadow-lg bg-white dark:bg-gray-800">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+          Juego de Patolli
+        </h1>
+        <ToggleTheme />
+      </Card>
+
+      {/* Contenido principal */}
+      <Card className="p-8 w-full max-w-md shadow-lg bg-white dark:bg-gray-800">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+            ¡Bienvenido al Patolli!
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">
+            Elige una opción para comenzar:
+          </p>
+
+          <div className="space-y-4">
+            <DialogPartida>
+              <Button
+                className="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition"
+                onMouseEnter={handleHover}
+                onClick={() => {
+                  handleClick();
+                  // Aquí puedes agregar la lógica para iniciar el juego
+                }}
+              >
+                Iniciar Juego
+              </Button>
+            </DialogPartida>
+            <Button
+              className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 transition"
+              onMouseEnter={handleHover}
+              onClick={() => {
+                handleClick();
+                // Aquí puedes agregar la lógica para mostrar las reglas del juego
+              }}
+            >
+              Reglas del Juego
+            </Button>
+            <SoundSettings />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </Card>
     </div>
   );
 }
