@@ -14,7 +14,7 @@ interface SoundStore {
 
 // Estado inicial separado
 const initialState: SoundStore = {
-  isMusicEnabled: true,
+  isMusicEnabled: false,
   isSoundEnabled: true,
   musicVolume: 0.5,
   soundVolume: 0.5,

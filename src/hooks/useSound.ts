@@ -1,5 +1,4 @@
-// useSound.ts
-
+"use client"
 import { useAudioStore } from "@/store/menu/AudioStore";
 
 const useSound = () => {

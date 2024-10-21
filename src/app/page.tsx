@@ -1,64 +1,27 @@
-"use client"
-import { useEffect, useRef } from "react";
+"use client";
 import { ToggleTheme } from "@/components/theme/ToggleTheme";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import useSound from "@/hooks/useSound";
-import SoundSettings from "@/components/gameMenu/SoundSettings";
-import { useAudioStore } from "@/store/menu/AudioStore";
-import { DialogPartida } from "@/components/gameMenu/DialogPartida";
+
+import { DialogUnirsePartida } from "@/components/gameMenu/DialogUnirsePartida";
+import { DialogSettings } from "@/components/gameMenu/DialogSettings";
+import { IoSettingsSharp } from "react-icons/io5";
+import { Sounds } from "@/constants/sound";
+import { DialogConfigPartida } from "@/components/gameMenu/DialogConfigPartida";
 
 export default function Home() {
   const { playSound } = useSound();
-  const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
-  const { isMusicEnabled, musicVolume } = useAudioStore();
 
   // Función para reproducir el sonido de hover
   const handleHover = () => {
-    playSound("/sounds/hover.mp3");
+    playSound(Sounds.HOVER);
   };
 
   // Función para reproducir el sonido de click
   const handleClick = () => {
-    playSound("/sounds/click.mp3");
+    playSound(Sounds.CLICK);
   };
-
-  useEffect(() => {
-    // Inicializar la música de fondo si aún no se ha hecho
-    if (!backgroundMusicRef.current) {
-      backgroundMusicRef.current = new Audio("/sounds/music-background.mp3");
-      backgroundMusicRef.current.loop = true;
-    }
-
-    // Configurar el volumen
-    backgroundMusicRef.current.volume = musicVolume;
-
-    // Reproducir la música si está habilitada
-    if (backgroundMusicRef.current) {
-      backgroundMusicRef.current.play().catch((error) => {
-        alert(error)
-        console.error("Error al intentar reproducir la música:", error);
-      });
-    } else {
-      backgroundMusicRef.current.pause();
-    }
-
-    // Limpiar el efecto al desmontar
-    return () => {
-      backgroundMusicRef.current?.pause();
-    };
-  }, []);
-
-  useEffect(() => {
-    // Reproducir o pausar la música según el estado
-    if (isMusicEnabled) {
-      backgroundMusicRef.current?.play().catch((error) => {
-        console.error("Error al intentar reproducir la música:", error);
-      });
-    } else {
-      backgroundMusicRef.current?.pause();
-    }
-  }, [isMusicEnabled, musicVolume]);
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 dark:bg-gray-900 bg-[url('/imgs/patolli.jpg')] bg-auto bg-center">
@@ -81,7 +44,7 @@ export default function Home() {
           </p>
 
           <div className="space-y-4">
-            <DialogPartida>
+            <DialogConfigPartida>
               <Button
                 className="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition"
                 onMouseEnter={handleHover}
@@ -90,11 +53,23 @@ export default function Home() {
                   // Aquí puedes agregar la lógica para iniciar el juego
                 }}
               >
-                Iniciar Juego
+                Crear Partida
               </Button>
-            </DialogPartida>
+            </DialogConfigPartida>
+            <DialogUnirsePartida>
+              <Button
+                className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 transition"
+                onMouseEnter={handleHover}
+                onClick={() => {
+                  handleClick();
+                  // Aquí puedes agregar la lógica para iniciar el juego
+                }}
+              >
+                Unirse 
+              </Button>
+            </DialogUnirsePartida>
             <Button
-              className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 transition"
+              className="w-full bg-red-500 text-white font-semibold py-2 px-4 rounded hover:bg-red-600 transition"
               onMouseEnter={handleHover}
               onClick={() => {
                 handleClick();
@@ -103,7 +78,12 @@ export default function Home() {
             >
               Reglas del Juego
             </Button>
-            <SoundSettings />
+            <DialogSettings>
+              <Button className="flex flex-row w-full gap-2 bg-slate-600 hover:bg-slate-700 text-white">
+                Configuracion
+                <IoSettingsSharp />
+              </Button>
+            </DialogSettings>
           </div>
         </div>
       </Card>

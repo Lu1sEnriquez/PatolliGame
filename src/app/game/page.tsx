@@ -1,9 +1,6 @@
-import { Tablero } from "@/components/game/Tablero";
+"use client"
+import { GameDisplay } from "@/components/game/GameDisplay";
 
 export default function NamePage() {
-  return (
-    <div>
-      <Tablero/>
-    </div>
-  );
+  return <GameDisplay></GameDisplay>;
 }
