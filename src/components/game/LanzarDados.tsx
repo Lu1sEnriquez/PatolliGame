@@ -4,16 +4,23 @@ import { Partida } from "@/interfaces/Patolli";
 import { SocketEvents, SocketResponse } from "@/interfaces/socket-response";
 import { socket } from "@/lib/socket";
 import { usePartidaStore } from "@/store/game/store";
+import { useJugadorStore } from "@/store/jugador/store";
 import React, { useState, useEffect } from "react";
 
 //  son las cañas
 export const LanzarDados = () => {
   const { partida, setPartida } = usePartidaStore();
+  const { id } = useJugadorStore();
 
-  const handleLazarDados = () => {
+  const handleLazarDados = (cantidad: number) => {
     socket.emit(
-      SocketEvents.MOVER_FICHA_PAGANDO,
-      JSON.stringify({ codigo: partida?.codigo }),
+      SocketEvents.MOVER_FICHA_AUTOMATICO,
+      JSON.stringify({
+        codigo: partida?.codigo,
+        idJugador: id,
+        idFicha: 1,
+        cantidad: cantidad,
+      }),
       (response: SocketResponse<Partida | null>) => {
         if (response.success && response.data) {
           console.log("Partida Iniciada:", response.data);
@@ -49,11 +56,6 @@ export const LanzarDados = () => {
       if (interval) clearInterval(interval);
     };
   }, [lanzando]);
-
-  // Función que se ejecuta al hacer clic en una caña
-  const detenerCana = (index: number) => {
-    setLanzando(false); // Detener la animación
-  };
 
   // Función para calcular el número de casillas que se deben avanzar
   const calcularCasillas = () => {
@@ -91,6 +93,8 @@ export const LanzarDados = () => {
         } else {
           playSound(Sounds.GANAR);
         }
+        // Llamar a handleLazarDados aquí
+        handleLazarDados(valorCasillas);
         setResultado(valorCasillas); // Mostrar el número de casillas a avanzar
       }, 3000); // Duración de la animación
     }, 200);
@@ -99,7 +103,7 @@ export const LanzarDados = () => {
   return (
     <div className="flex flex-col items-center">
       <button
-        //   disabled={disable}
+        // disabled={disable}
         onClick={lanzarCanas}
         className="px-4 py-2 bg-blue-500 text-white rounded mb-4"
       >
@@ -110,7 +114,6 @@ export const LanzarDados = () => {
         {canas.map((cana, index) => (
           <div
             key={index}
-            onClick={() => detenerCana(index)}
             className={`w-12 h-12 flex items-center justify-center rounded border-2 ${
               cana ? "bg-green-500" : "bg-gray-300"
             } cursor-pointer`}

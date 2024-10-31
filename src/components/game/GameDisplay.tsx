@@ -1,4 +1,5 @@
 "use client";
+import Swal from "sweetalert2";
 import { cn } from "@/lib/utils";
 import { UserDisplay } from "./UserDisplay";
 import { Card } from "../ui/card";
@@ -31,13 +32,28 @@ export const GameDisplay = () => {
   };
   React.useEffect(() => {
     // Escuchar el evento de jugador unido
-    const handleJugadorUnido = (response: SocketResponse<Partida | null>) => {
+    const handleUpdatePartida = (response: SocketResponse<Partida | null>) => {
       if (response.success && response.data) {
-        console.log("Jugador unido:", response.data);
-        // alert(response.message);
         setPartida(response.data); // Actualiza el estado con la nueva partida
+        // Muestra una alerta de error en la esquina derecha
+        Swal.fire({
+          title: response.message,
+          icon: "success",
+          position: "top-end", // Posición de la alerta
+          showConfirmButton: false, // Oculta el botón de confirmación
+          timer: 3000, // Duración de la alerta antes de que se cierre automáticamente (en milisegundos)
+          toast: true, // Hace que la alerta se muestre como un toast
+        });
       } else {
-        console.error("Error al unir jugador:", response.message); // Usa console.error para errores
+        // Muestra una alerta de error en la esquina derecha
+        Swal.fire({
+          title: response.message,
+          icon: "error",
+          position: "top-end", // Posición de la alerta
+          showConfirmButton: false, // Oculta el botón de confirmación
+          timer: 3000, // Duración de la alerta antes de que se cierre automáticamente (en milisegundos)
+          toast: true, // Hace que la alerta se muestre como un toast
+        });
       }
     };
 
@@ -51,16 +67,18 @@ export const GameDisplay = () => {
     //   }
     // };
     // Suscribirse al evento
-    socket.on(SocketEvents.JUGADOR_UNIDO, handleJugadorUnido);
-    socket.on(SocketEvents.MOVER_FICHA_AUTOMATICO, handleJugadorUnido);
-    socket.on(SocketEvents.MOVER_FICHA_AUTOMATICO, handleJugadorUnido);
-    socket.on(SocketEvents.MOVER_FICHA_PAGANDO, handleJugadorUnido);
+    socket.on(SocketEvents.JUGADOR_UNIDO, handleUpdatePartida);
+    socket.on(SocketEvents.MOVER_FICHA_PAGANDO, handleUpdatePartida);
+    socket.on(SocketEvents.MOVER_FICHA_AUTOMATICO, handleUpdatePartida);
+    socket.on(SocketEvents.MOVER_FICHA_PAGANDO, handleUpdatePartida);
+    socket.on(SocketEvents.INICIAR_PARTIDA, handleUpdatePartida);
     // Limpiar la conexión y desuscribirse cuando el componente se desmonta
     return () => {
-      socket.off(SocketEvents.JUGADOR_UNIDO, handleJugadorUnido);
-      socket.off(SocketEvents.MOVER_FICHA_AUTOMATICO, handleJugadorUnido);
-      socket.off(SocketEvents.MOVER_FICHA_PAGANDO, handleJugadorUnido);
-      socket.off(SocketEvents.INICIAR_PARTIDA, handleJugadorUnido);
+      socket.off(SocketEvents.JUGADOR_UNIDO, handleUpdatePartida);
+      socket.off(SocketEvents.MOVER_FICHA_AUTOMATICO, handleUpdatePartida);
+      socket.off(SocketEvents.MOVER_FICHA_PAGANDO, handleUpdatePartida);
+      socket.off(SocketEvents.INICIAR_PARTIDA, handleUpdatePartida);
+      socket.off(SocketEvents.INICIAR_PARTIDA, handleUpdatePartida);
     };
   }, [setPartida]); // Si setPartida no cambia, podrías considerar omitirlo aquí
 
