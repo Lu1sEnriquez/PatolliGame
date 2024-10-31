@@ -16,6 +16,7 @@ import { SocketEvents, SocketResponse } from "@/interfaces/socket-response";
 import { usePartidaStore } from "@/store/game/store";
 import { estadoEnum, Partida } from "@/interfaces/Patolli";
 import { UserColor } from "../game/UserDisplay";
+import { useJugadorStore } from "@/store/jugador/store";
 
 interface Props {
   children: React.ReactNode;
@@ -36,7 +37,7 @@ export const DialogConfigPartida = ({ children }: Props) => {
   const [fichasTotales, setFichasTotales] = useState<number>(3);
   const router = useRouter();
   const { setPartida } = usePartidaStore();
-
+  const { setJugador } = useJugadorStore();
   // Función para actualizar un color
   const handleColorChange = (index: number, color: string) => {
     const newColores = [...coloresSeleccionado];
@@ -56,7 +57,7 @@ export const DialogConfigPartida = ({ children }: Props) => {
       montoApuesta: montoApuesta,
       fichasTotales: fichasTotales,
       colores: coloresSeleccionado, // Asumiendo que solo se selecciona un color por partida
-      tablerosize: tableroSize,
+      tableroSize: tableroSize,
       estado: estadoEnum.EN_ESPERA,
     };
 
@@ -68,7 +69,13 @@ export const DialogConfigPartida = ({ children }: Props) => {
         if (response.success && response.data) {
           console.log("Partida creada:", response.data);
           setPartida(response.data);
-
+          setPartida(response.data);
+          const jugador = response.data.jugadores.find(
+            (jugador) => jugador.nombre == username
+          );
+          if (!jugador)
+            return alert("Error al unir jugador:" + response.message);
+          setJugador(jugador?.id, jugador?.nombre);
           // Redirigir a la página del juego
           router.push("/game");
         } else {

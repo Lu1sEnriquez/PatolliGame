@@ -1,5 +1,9 @@
-
-import { Casilla, CasillaTypeEnum, OrientacionCasilla } from "@/interfaces/Patolli";
+import {
+  Casilla,
+  CasillaTypeEnum,
+  OrientacionCasilla,
+} from "@/interfaces/Patolli";
+import { FichaDisplay } from "./FichaDisplay";
 
 interface CasillaProps {
   casilla: Casilla;
@@ -24,25 +28,12 @@ export const CasillaDisplay = ({ casilla }: CasillaProps) => {
         return "bg-amber-200";
       case CasillaTypeEnum.NORMAL:
         return "bg-amber-200";
+      case CasillaTypeEnum.SEMICIRCULAR:
+        return "bg-blue-200";
       default:
         return "bg-transparent border-none";
     }
   };
-
-  // const getText = () => {
-  //   switch (tipo) {
-  //     case "Centro":
-  //       return "Centro";
-  //     case "Final":
-  //       return "Final";
-  //     case "Inicio":
-  //       return "Inicio";
-  //     case "Salida":
-  //       return "Salida";
-  //     default:
-  //       return "";
-  //   }
-  // };
 
   const getBorderRadius = () => {
     if (
@@ -101,23 +92,27 @@ export const CasillaDisplay = ({ casilla }: CasillaProps) => {
   return (
     <div
       onClick={() => alert(`${casilla.orientacion + casilla.tipo}`)}
-      className={`  min-h-[3rem] min-w-[3rem]  border border-amber-700 shadow shadow-black flex items-center justify-center ${getBackgroundColor()} ${getBorderRadius()}  `}
+      className={`z-10  min-h-[3rem] min-w-[3rem]  border border-amber-700 shadow-lg shadow-gray-900 flex items-center justify-center ${getBackgroundColor()} ${getBorderRadius()}  `}
     >
       {casilla.tipo === CasillaTypeEnum.TRIANGULO ? (
         <div className="relative">
           <div className="absolute z-10 left-0 right-0 top-0 bottom-0">
-            {/* {casilla.ocupante && <FichaDisplay ficha={casilla.ocupante} />} */}
+            {casilla.ocupante && <FichaDisplay ficha={casilla.ocupante} />}
           </div>
           <div
-            className={`w-0 h-0 border-l-[1.25rem] border-l-transparent borderra border-r-[1.25rem] border-r-transparent border-b-[2.25rem]  ${getTriangleRotation()}`}
+            className={`w-0 h-0 border-l-[1.25rem] border-l-transparent  border-r-[1.25rem] border-r-transparent border-b-[2.25rem]  ${getTriangleRotation()}`}
           ></div>
         </div>
       ) : (
         <div className="text-xs text-slate-100">
           {/* aqui va la ficha */}
-          {/* <p className="text-black text-xs">{casilla.posicion.X + "," + casilla.posicion.Y}</p> */}
-          {/* <p className="text-black text-xs">{casilla.orientacion}</p> */}
-          {/* {casilla.ocupante && <FichaDisplay ficha={casilla.ocupante} />} */}
+
+          {/* <p className="text-black text-xs">{casilla.id}</p>
+          <p className="text-black text-xs">
+            {casilla.posicion.X + "," + casilla.posicion.Y}
+          </p> */}
+          <p className="text-black text-xs">{casilla.id}</p>
+          {casilla.ocupante && <FichaDisplay ficha={casilla.ocupante} />}
         </div>
       )}
     </div>

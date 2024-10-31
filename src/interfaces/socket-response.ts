@@ -8,6 +8,7 @@ export interface SocketResponse<T> {
 // src/socketEvents.d.ts
 
 // Enumeración de eventos de Socket
+
 export enum SocketEvents {
   CREAR_PARTIDA = 'crear_partida',
   PARTIDA_CREADA = 'partida_creada',
@@ -19,8 +20,13 @@ export enum SocketEvents {
   ELIMINAR_JUGADOR = 'eliminar_jugador',
   ACTUALIZAR_PARTIDA = 'actualizar_partida',
   DISCONNECT = 'disconnect',
+  JUGADOR_DESCONECTADO = 'jugador_desconectado',
+  PAGAR_APUESTA = 'pagar_apuesta',
+  INICIAR_PARTIDA = 'iniciar_partida',
+  INGRESAR_FICHA = 'ingresar_ficha',
+  MOVER_FICHA_PAGANDO = 'mover_ficha_pagando',
+  MOVER_FICHA_AUTOMATICO = 'mover_ficha_automatico',
 }
-
 // Función para 200 OK
 export function ok<T>(
   data: T,

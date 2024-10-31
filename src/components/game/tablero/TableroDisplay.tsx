@@ -3,85 +3,76 @@ import { cn } from "@/lib/utils";
 
 import { CasillaDisplay } from "./CasillaDisplay";
 
-import { useEffect, useState } from "react";
-
 import { Casilla, Tablero } from "@/interfaces/Patolli";
+import { usePartidaStore } from "@/store/game/store";
 
 // Componente del tablero
-interface TableroProps {
-  tableroInicial: Tablero;
-}
 
-export const TableroDisplay = ({ tableroInicial }: TableroProps) => {
-  const [tablero] = useState<Tablero>(tableroInicial);
-
-  useEffect(() => {
-    // setTablero(tableroChicoTest);
-  }, []);
-
-  // const jugador: Jugador = {
-  //   id: 0,
-  //   color: "red",
-  //   fondoApuesta: 10,
-  //   haPerdido: false,
-  //   nombre: "prueba",
-
-  // };
-
-  const handleMover = () => {
-    // const tableroUpdate = moverFicha(
-    //   jugador,
-    //   1,
-    //   tablero,
-    //   Direcciones.ADELANTE,
-    //   [jugador]
-    // );
-    // setTablero(tableroUpdate);
-  };
-  const handleMoverAtras = () => {
-    // const tableroUpdate = moverFicha(jugador, 1, tablero, Direcciones.ATRAS, [
-    //   jugador,
-    // ]);
-    // setTablero(tableroUpdate);
-  };
-
+export const TableroDisplay = () => {
   const renderTablero = (tablero: Tablero) => {
-    console.log(tablero);
+    // Convertimos el array unidimensional de casillas en una matriz 2D (filas y columnas)
+    const gridSize = tablero.tableroSize;
 
-    return tablero.casillas.map((casilla: Casilla, index: number) => {
-      if (casilla) {
-        return <CasillaDisplay key={index} casilla={casilla} />;
-      } else {
-        return (
-          <div
-            key={index}
-            className={cn(
-              "w-full h-full",
-              { "bg-amber-700": false } //true muestra las casillas extras de la matriz
-            )}
-          >
-            <p className="z-10">{casilla}</p>
-          </div>
-        );
+    // Creamos una matriz vacía
+    const casillasMatriz: (Casilla | null)[][] = Array.from(
+      { length: gridSize },
+      () => Array(gridSize).fill(null)
+    );
+
+    // Colocamos cada casilla en su posición en la matriz de casillas
+    tablero.casillas.forEach((casilla) => {
+      const { X, Y } = casilla.posicion;
+      if (X < gridSize && Y < gridSize) {
+        casillasMatriz[X][Y] = casilla;
       }
     });
+
+    // Recorremos la matriz de casillas para renderizar el tablero
+    return casillasMatriz.map((fila, rowIndex) =>
+      fila.map((casilla, colIndex) => {
+        if (casilla) {
+          return (
+            <CasillaDisplay key={`${rowIndex}-${colIndex}`} casilla={casilla} />
+          );
+        } else {
+          // Renderizamos una celda vacía si no hay casilla en esta posición
+          return (
+            <div
+              key={`${rowIndex}-${colIndex}`}
+              className="w-full h-full bg-transparent shadow-custom shadow-gray-900 "
+            >
+              {/* Espacio para casillas vacías */}
+            </div>
+          );
+        }
+      })
+    );
   };
+  const { partida } = usePartidaStore();
 
   return (
-    <div className="  ">
-      {/* <div className="rotate-1 z-10 w-full flex justify-center ">
+    <div
+      className={cn(
+        // "rotate-180 transform scale-x-[-1]",
+        " rounded-full  overflow-hidden shadow-customXl shadow-black"
+      )}
+    >
+      {/* <div className=" z-10 w-full flex justify-center ">
         <Button onClick={handleMover}>+</Button>
         <Button onClick={handleMoverAtras}>-</Button>
       </div> */}
       <div
-        className={cn(`rotate-45 grid gap-1px    min-h-max min-w-max   `)}
+        className={cn(
+          // "-rotate-45 ",
+          "grid gap-0.5 min-h-max min-w-max"
+        )}
         style={{
           gridTemplateColumns: `repeat(${
-            tablero !== undefined && tablero.numeroCasillasPorAspa
+            partida?.tablero !== undefined && partida?.tablero.tableroSize
           }, minmax(0, 1fr))`,
         }}
       >
-        {tablero !== undefined && renderTablero(tablero)}
+        {partida?.tablero !== undefined && renderTablero(partida.tablero)}
       </div>
     </div>
   );

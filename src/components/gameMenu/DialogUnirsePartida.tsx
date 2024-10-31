@@ -16,6 +16,7 @@ import { socket } from "@/lib/socket";
 import { SocketEvents, SocketResponse } from "@/interfaces/socket-response";
 import { usePartidaStore } from "@/store/game/store";
 import { Partida } from "@/interfaces/Patolli";
+import { useJugadorStore } from "@/store/jugador/store";
 
 interface Props {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ export const DialogUnirsePartida = ({ children }: Props) => {
   const [username, setUsername] = useState<string>("");
   const router = useRouter();
   const { setPartida } = usePartidaStore();
+  const { setJugador } = useJugadorStore();
 
   // Manejar unirse a la partida
   const handleUnirsePartida = () => {
@@ -53,6 +55,11 @@ export const DialogUnirsePartida = ({ children }: Props) => {
         console.log("Jugador unido:", response.data);
         // Aquí puedes manejar la lógica que desees cuando un jugador se une
         setPartida(response.data);
+        const jugador = response.data.jugadores.find(
+          (jugador) => jugador.nombre == username
+        );
+        if (!jugador) return alert("Error al unir jugador:" + response.message);
+        setJugador(jugador?.id, jugador?.nombre);
       } else {
         console.log("Error al unir jugador:", response.message);
       }
@@ -65,7 +72,7 @@ export const DialogUnirsePartida = ({ children }: Props) => {
       socket.off(SocketEvents.JUGADOR_UNIDO, handleJugadorUnido);
       socket.off("connect"); // Desconectar el socket
     };
-  }, [setPartida]);
+  }, [setPartida, username, setJugador]);
 
   return (
     <Dialog>

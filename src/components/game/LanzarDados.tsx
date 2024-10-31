@@ -1,9 +1,28 @@
 import { Sounds } from "@/constants/sound";
 import useSound from "@/hooks/useSound";
+import { Partida } from "@/interfaces/Patolli";
+import { SocketEvents, SocketResponse } from "@/interfaces/socket-response";
+import { socket } from "@/lib/socket";
+import { usePartidaStore } from "@/store/game/store";
 import React, { useState, useEffect } from "react";
 
 //  son las cañas
-const LanzarDados: React.FC = () => {
+export const LanzarDados = () => {
+  const { partida, setPartida } = usePartidaStore();
+
+  const handleLazarDados = () => {
+    socket.emit(
+      SocketEvents.MOVER_FICHA_PAGANDO,
+      JSON.stringify({ codigo: partida?.codigo }),
+      (response: SocketResponse<Partida | null>) => {
+        if (response.success && response.data) {
+          console.log("Partida Iniciada:", response.data);
+          setPartida(response.data);
+        }
+      }
+    );
+  };
+
   // Estado para las 5 cañas, inicialmente lisas (false = liso, true = con punto)
   const [canas, setCanas] = useState<boolean[]>([
     false,
@@ -59,7 +78,7 @@ const LanzarDados: React.FC = () => {
   const { playSound } = useSound();
   // Función para lanzar las cañas
   const lanzarCanas = () => {
-    setDisable(true)
+    setDisable(true);
     playSound("/sounds/dados.mp3");
     setTimeout(() => {
       setLanzando(true);
@@ -80,7 +99,7 @@ const LanzarDados: React.FC = () => {
   return (
     <div className="flex flex-col items-center">
       <button
-    //   disabled={disable}
+        //   disabled={disable}
         onClick={lanzarCanas}
         className="px-4 py-2 bg-blue-500 text-white rounded mb-4"
       >
@@ -109,5 +128,3 @@ const LanzarDados: React.FC = () => {
     </div>
   );
 };
-
-export default LanzarDados;

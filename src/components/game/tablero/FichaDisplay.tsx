@@ -1,4 +1,4 @@
-import type{ Ficha } from "@/backend/interface/ficha.interface";
+import { Ficha } from "@/interfaces/Patolli";
 import { SiJsonwebtokens } from "react-icons/si";
 
 interface FichaProps {

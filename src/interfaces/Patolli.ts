@@ -3,10 +3,10 @@ export interface Partida {
   codigo?: string; // Código único de la partida
   jugadores: Jugador[]; // Lista de jugadores en la partida
   fondoApuestaFijo: number; // Fondo de apuesta fijo
-  tablerosize: number; // Tamaño del tablero
+  fichasTotales: number; // Fichas totales que tendra cada jugador
+  tableroSize: number; // Tamaño del tablero
   creadorNombre: string; // Nombre del creador de la partida
   colores: string[]; // Colores asignados a los jugadores
-  fichasTotales: number; // Fichas totales de por Jugador
   montoApuesta: number; // Apuesta actual
   turnoActual?: number; // Turno actual, opcional con valor por defecto 0
   estado?: estadoEnum; // Estado de la partida, opcional con valor por defecto 'EN_ESPERA'
@@ -23,15 +23,8 @@ export interface Jugador {
   fichas: Ficha[]; // Lista de fichas del jugador
 }
 
-export interface Ficha {
-  id: number; // ID incremental
-  color?: string; // Color de la ficha, opcional
-  posicion?: Coordenadas; // Coordenadas en el tablero, opcional
-  eliminada?: boolean; // Si la ficha está eliminada, opcional con valor por defecto 'false'
-}
-
 export interface Tablero {
-  numeroCasillasPorAspa: number; // Número de casillas por aspa
+  tableroSize: number; // Número de casillas por aspa
   casillas: Casilla[]; // Lista de casillas en el tablero
 }
 
@@ -40,7 +33,14 @@ export interface Casilla {
   tipo: CasillaTypeEnum; // Tipo de la casilla
   orientacion: OrientacionCasilla; // Orientación de la casilla
   posicion: Coordenadas; // Coordenadas de la casilla en el tablero
-  ocupanteId?: number; // ID de la ficha ocupante, opcional
+  ocupante?: Ficha | null; // ficha ocupante, opcional
+}
+export interface Ficha {
+  id: number; // ID incremental
+  color?: string; // Color de la ficha, opcional
+  posicion?: Coordenadas; // Coordenadas en el tablero, opcional
+  eliminada?: boolean; // Si la ficha está eliminada, opcional con valor por defecto 'false'
+  casillasAvanzadas: number; // Casillas avanzadas por la ficha
 }
 
 export interface Coordenadas {
