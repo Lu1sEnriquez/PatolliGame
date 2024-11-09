@@ -5,32 +5,9 @@ import { SocketEvents, SocketResponse } from "@/interfaces/socket-response";
 import { socket } from "@/lib/socket";
 import { usePartidaStore } from "@/store/game/store";
 import { useJugadorStore } from "@/store/jugador/store";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-//  son las cañas
 export const LanzarDados = () => {
-  const { partida, setPartida } = usePartidaStore();
-  const { id } = useJugadorStore();
-
-  const handleLazarDados = (cantidad: number) => {
-    socket.emit(
-      SocketEvents.MOVER_FICHA_AUTOMATICO,
-      JSON.stringify({
-        codigo: partida?.codigo,
-        idJugador: id,
-        idFicha: 1,
-        cantidad: cantidad,
-      }),
-      (response: SocketResponse<Partida | null>) => {
-        if (response.success && response.data) {
-          console.log("Partida Iniciada:", response.data);
-          setPartida(response.data);
-        }
-      }
-    );
-  };
-
-  // Estado para las 5 cañas, inicialmente lisas (false = liso, true = con punto)
   const [canas, setCanas] = useState<boolean[]>([
     false,
     false,
@@ -38,29 +15,32 @@ export const LanzarDados = () => {
     false,
     false,
   ]);
-  const [lanzando, setLanzando] = useState<boolean>(false);
+  const [animando, setAnimando] = useState<boolean>(false);
   const [disable, setDisable] = useState<boolean>(false);
+  const { partida, setPartida } = usePartidaStore();
+  const { id } = useJugadorStore();
   const [resultado, setResultado] = useState<number | null>(null);
+  const { playSound } = useSound();
 
-  // Controlador de la animación
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+  const handleLazarDados = (cantidad: number) => {
+    socket.emit(
+      SocketEvents.MOVER_FICHA_AUTOMATICO,
+      JSON.stringify({
+        codigo: partida?.codigo,
+        idJugador: id,
+        cantidad: 1,
+      }),
+      (response: SocketResponse<Partida | null>) => {
+        if (response.data) {
+          setPartida(response.data);
+          setDisable(false);
+        }
+      }
+    );
+  };
 
-    if (lanzando) {
-      interval = setInterval(() => {
-        setCanas((prevCanas) => prevCanas.map(() => Math.random() > 0.5)); // Cambiar aleatoriamente entre liso y punto
-      }, 200);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [lanzando]);
-
-  // Función para calcular el número de casillas que se deben avanzar
-  const calcularCasillas = () => {
-    const puntos = canas.filter((cana) => cana).length; // Contar las cañas con punto
-
+  const calcularCasillas = (estadoFinalCañas: boolean[]) => {
+    const puntos = estadoFinalCañas.filter((cana) => cana).length;
     switch (puntos) {
       case 1:
         return 1;
@@ -73,39 +53,46 @@ export const LanzarDados = () => {
       case 5:
         return 10;
       default:
-        return 0; // No se avanza si todas las cañas son lisas
+        return 0;
     }
   };
 
-  const { playSound } = useSound();
-  // Función para lanzar las cañas
   const lanzarCanas = () => {
     setDisable(true);
     playSound("/sounds/dados.mp3");
-    setTimeout(() => {
-      setLanzando(true);
-      setResultado(null); // Resetear el resultado antes de lanzar
-      setTimeout(() => {
-        setLanzando(false); // Detener la animación después de 3 segundos
-        const valorCasillas = calcularCasillas();
-        if (valorCasillas == 0) {
-          playSound(Sounds.PERDER);
-        } else {
-          playSound(Sounds.GANAR);
-        }
-        // Llamar a handleLazarDados aquí
-        handleLazarDados(valorCasillas);
-        setResultado(valorCasillas); // Mostrar el número de casillas a avanzar
-      }, 3000); // Duración de la animación
+    setResultado(null);
+    setAnimando(true);
+
+    let estadoFinalCañas: boolean[] = [];
+    const interval = setInterval(() => {
+      estadoFinalCañas = Array.from({ length: 5 }, () => Math.random() > 0.5);
+      setCanas(estadoFinalCañas); // Actualizamos el estado para mostrar la animación
     }, 200);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      setAnimando(false);
+      const valorCasillas = calcularCasillas(estadoFinalCañas);
+      setResultado(valorCasillas);
+
+      if (valorCasillas === 0) {
+        playSound(Sounds.PERDER);
+      } else {
+        playSound(Sounds.GANAR);
+      }
+
+      handleLazarDados(valorCasillas);
+    }, 3000);
   };
 
   return (
     <div className="flex flex-col items-center">
       <button
-        // disabled={disable}
+        disabled={disable}
         onClick={lanzarCanas}
-        className="px-4 py-2 bg-blue-500 text-white rounded mb-4"
+        className={`px-4 py-2 bg-blue-500 text-white rounded mb-4 ${
+          disable ? "opacity-50" : ""
+        }`}
       >
         Lanzar cañas
       </button>
@@ -115,8 +102,14 @@ export const LanzarDados = () => {
           <div
             key={index}
             className={`w-12 h-12 flex items-center justify-center rounded border-2 ${
-              cana ? "bg-green-500" : "bg-gray-300"
-            } cursor-pointer`}
+              animando
+                ? cana
+                  ? "bg-yellow-500"
+                  : "bg-yellow-300"
+                : cana
+                ? "bg-green-500"
+                : "bg-gray-300"
+            }`}
           >
             {cana ? "•" : ""}
           </div>

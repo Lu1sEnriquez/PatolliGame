@@ -9,6 +9,7 @@ export interface SocketResponse<T> {
 
 // Enumeración de eventos de Socket
 
+// Enumeración de eventos de Socket
 export enum SocketEvents {
   CREAR_PARTIDA = 'crear_partida',
   PARTIDA_CREADA = 'partida_creada',
@@ -26,6 +27,7 @@ export enum SocketEvents {
   INGRESAR_FICHA = 'ingresar_ficha',
   MOVER_FICHA_PAGANDO = 'mover_ficha_pagando',
   MOVER_FICHA_AUTOMATICO = 'mover_ficha_automatico',
+  GANADOR = 'ganador',
 }
 // Función para 200 OK
 export function ok<T>(

@@ -13,10 +13,78 @@ import React from "react";
 import { Button } from "../ui/button";
 import { useJugadorStore } from "@/store/jugador/store";
 import { LanzarDados } from "./LanzarDados";
+import confetti from "canvas-confetti";
+import useSound from "@/hooks/useSound";
 
 export const GameDisplay = () => {
   const { partida, setPartida } = usePartidaStore();
   const { name, id } = useJugadorStore();
+  const { playSound } = useSound();
+  // Importa la biblioteca de confeti que estés utilizando (ej: confetti.js)
+
+  // Función para lanzar el confetti con muchos efectos
+  const lanzarConfetti = () => {
+    confetti({
+      particleCount: 200,
+      spread: 70,
+      origin: { y: 0.6 }, // Posición inicial
+      zIndex: 2000, // Para asegurar que esté encima del modal
+    });
+
+    // Lanzar más confetti repetidamente para un efecto "celebración"
+    setTimeout(() => {
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.4 },
+        zIndex: 2000,
+      });
+    }, 300);
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.5 },
+        zIndex: 2000,
+      });
+    }, 600);
+  };
+
+  const handleHayGanador = (response: SocketResponse<Jugador | null>) => {
+    const jugador = response.data;
+
+    if (jugador && jugador?.id == id) {
+      // Mostrar confetti
+
+      playSound("/sounds/win.mp3");
+      // Mostrar el modal de SweetAlert
+      lanzarConfetti();
+      Swal.fire({
+        title: `¡Felicidades, ${jugador.nombre}!`,
+        text: "¡Eres el ganador!",
+        icon: "success",
+        confirmButtonText: "Aceptar",
+        backdrop: true,
+        willClose: () => {
+          // Puedes añadir más lógica aquí si es necesario
+        },
+      });
+     
+    } else if (jugador && jugador.id != id) {
+      playSound("/sounds/perder.mp3");
+      Swal.fire({
+        title: `Lo siento, ${name}`,
+        text: "¡Has perdido, mejor suerte la próxima vez!",
+        icon: "error",
+        confirmButtonText: "Aceptar",
+        backdrop: true,
+        willClose: () => {
+          // Puedes añadir más lógica aquí si es necesario
+        },
+      });
+    }
+  };
 
   const handleIniciarPartida = () => {
     socket.emit(
@@ -33,7 +101,7 @@ export const GameDisplay = () => {
   React.useEffect(() => {
     // Escuchar el evento de jugador unido
     const handleUpdatePartida = (response: SocketResponse<Partida | null>) => {
-      if (response.success && response.data) {
+      if (response.data && response.success) {
         setPartida(response.data); // Actualiza el estado con la nueva partida
         // Muestra una alerta de error en la esquina derecha
         Swal.fire({
@@ -44,7 +112,8 @@ export const GameDisplay = () => {
           timer: 3000, // Duración de la alerta antes de que se cierre automáticamente (en milisegundos)
           toast: true, // Hace que la alerta se muestre como un toast
         });
-      } else {
+      } else if (response.data) {
+        setPartida(response.data); // Actualiza el estado con la nueva partida
         // Muestra una alerta de error en la esquina derecha
         Swal.fire({
           title: response.message,
@@ -72,13 +141,16 @@ export const GameDisplay = () => {
     socket.on(SocketEvents.MOVER_FICHA_AUTOMATICO, handleUpdatePartida);
     socket.on(SocketEvents.MOVER_FICHA_PAGANDO, handleUpdatePartida);
     socket.on(SocketEvents.INICIAR_PARTIDA, handleUpdatePartida);
+    socket.on(SocketEvents.GANADOR, handleHayGanador);
+    socket.on(SocketEvents.JUGADOR_DESCONECTADO, handleUpdatePartida);
     // Limpiar la conexión y desuscribirse cuando el componente se desmonta
     return () => {
       socket.off(SocketEvents.JUGADOR_UNIDO, handleUpdatePartida);
       socket.off(SocketEvents.MOVER_FICHA_AUTOMATICO, handleUpdatePartida);
       socket.off(SocketEvents.MOVER_FICHA_PAGANDO, handleUpdatePartida);
       socket.off(SocketEvents.INICIAR_PARTIDA, handleUpdatePartida);
-      socket.off(SocketEvents.INICIAR_PARTIDA, handleUpdatePartida);
+      socket.off(SocketEvents.GANADOR, handleHayGanador);
+      socket.on(SocketEvents.JUGADOR_DESCONECTADO, handleUpdatePartida);
     };
   }, [setPartida]); // Si setPartida no cambia, podrías considerar omitirlo aquí
 
@@ -132,12 +204,7 @@ export const GameDisplay = () => {
 
             return (
               <div key={jugador.id} className={positionClass}>
-                <UserDisplay
-                  fichas={jugador.fichas.length} // Asumiendo que tienes la cantidad de fichas
-                  fondo={jugador.fondoApuesta || 0} // Asumiendo que el fondo es opcional
-                  username={jugador.nombre}
-                  color={partida.colores[index]} // Asegúrate de que UserColor tenga los colores adecuados
-                />
+                <UserDisplay jugador={jugador} />
               </div>
             );
           })}

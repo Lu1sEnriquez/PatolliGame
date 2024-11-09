@@ -21,6 +21,7 @@ export interface Jugador {
   color?: string; // Color del jugador, opcional
   turnoFicha: number; // Turno actual de la ficha del jugador
   fichas: Ficha[]; // Lista de fichas del jugador
+  isDisconected: boolean;
 }
 
 export interface Tablero {
@@ -33,7 +34,7 @@ export interface Casilla {
   tipo: CasillaTypeEnum; // Tipo de la casilla
   orientacion: OrientacionCasilla; // Orientación de la casilla
   posicion: Coordenadas; // Coordenadas de la casilla en el tablero
-  ocupante?: Ficha | null; // ficha ocupante, opcional
+  ocupantes: Ficha[]; // ficha ocupante, opcional
 }
 export interface Ficha {
   id: number; // ID incremental
@@ -49,29 +50,29 @@ export interface Coordenadas {
 }
 
 export enum CasillaTypeEnum {
-  OCULTA = 'OCULTA',
-  NORMAL = 'NORMAL',
-  CENTRAL = 'CENTRAL',
-  TRIANGULO = 'TRIANGULO',
-  SEMICIRCULAR = 'SEMICIRCULAR',
-  INICIO = 'INICIO',
-  FINAL = 'FINAL',
-  SALIDA = 'SALIDA',
+  OCULTA = "OCULTA",
+  NORMAL = "NORMAL",
+  CENTRAL = "CENTRAL",
+  TRIANGULO = "TRIANGULO",
+  SEMICIRCULAR = "SEMICIRCULAR",
+  INICIO = "INICIO",
+  FINAL = "FINAL",
+  SALIDA = "SALIDA",
 }
 
 export enum OrientacionCasilla {
-  SuperiorIzquierda = 'SuperiorIzquierda',
-  SuperiorDerecha = 'SuperiorDerecha',
-  InferiorIzquierda = 'InferiorIzquierda',
-  InferiorDerecha = 'InferiorDerecha',
-  IzquierdaSuperior = 'IzquierdaSuperior',
-  IzquierdaInferior = 'IzquierdaInferior',
-  DerechaSuperior = 'DerechaSuperior',
-  DerechaInferior = 'DerechaInferior',
+  SuperiorIzquierda = "SuperiorIzquierda",
+  SuperiorDerecha = "SuperiorDerecha",
+  InferiorIzquierda = "InferiorIzquierda",
+  InferiorDerecha = "InferiorDerecha",
+  IzquierdaSuperior = "IzquierdaSuperior",
+  IzquierdaInferior = "IzquierdaInferior",
+  DerechaSuperior = "DerechaSuperior",
+  DerechaInferior = "DerechaInferior",
 }
 
 export enum estadoEnum {
-  EN_ESPERA = 'EN_ESPERA',
-  EN_CURSO = 'EN_CURSO',
-  FINALIZADA = 'FINALIZADA',
+  EN_ESPERA = "EN_ESPERA",
+  EN_CURSO = "EN_CURSO",
+  FINALIZADA = "FINALIZADA",
 }

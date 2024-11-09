@@ -3,6 +3,8 @@ import { useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { LuBean } from "react-icons/lu";
 import { SiJsonwebtokens } from "react-icons/si";
+import { CiWifiOff } from "react-icons/ci";
+import { Jugador } from "../../interfaces/Patolli";
 
 export enum UserColor {
   PRIMERO = "#00aae6", //AZUL
@@ -12,21 +14,27 @@ export enum UserColor {
 }
 
 interface UserProps {
-  username: string;
-  fichas: number;
-  fondo: number;
-  color: string;
+  jugador: Jugador;
 }
 
-export const UserDisplay = ({ fichas, fondo, username, color }: UserProps) => {
-  const [fichasArr] = useState<number[]>(Array(fichas).fill(0) as number[]);
+export const UserDisplay = ({ jugador }: UserProps) => {
+  const [fichasArr] = useState<number[]>(
+    Array(jugador.fichas.length).fill(0) as number[]
+  );
 
   return (
-    <div className={`flex flex-row  gap-3 text-[${color}] z-10`}>
+    <div className={`flex flex-row  gap-3 text-[${jugador.color}] z-10`}>
       {/* icon user y name */}
-      <div className="flex flex-col items-center gap-2">
+      <div className="relative flex flex-col items-center gap-2">
+        {jugador.isDisconected && (
+          <CiWifiOff
+            size={40}
+            className="absolute -top-2 -right-3 text-yellow-500"
+          />
+        )}
+
         <FaUser size={60} className="" />
-        <p>{username}</p>
+        <p>{jugador.nombre}</p>
       </div>
 
       {/*fondo y fichas  */}
@@ -34,7 +42,7 @@ export const UserDisplay = ({ fichas, fondo, username, color }: UserProps) => {
         {/*frijoles  */}
         <div className="flex flex-row gap-1 items-center">
           <LuBean size={25} className="text-orange-900" />
-          <p className="text-2xl ">{fondo}</p>
+          <p className="text-2xl ">{jugador.fondoApuesta}</p>
         </div>
 
         {/* fichas */}
@@ -43,7 +51,7 @@ export const UserDisplay = ({ fichas, fondo, username, color }: UserProps) => {
             <SiJsonwebtokens
               key={i}
               size={25}
-              color={color}
+              color={jugador.color}
               className="shadow-xl border rounded-full bg-foreground"
             />
           ))}

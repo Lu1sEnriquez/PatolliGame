@@ -94,25 +94,45 @@ export const CasillaDisplay = ({ casilla }: CasillaProps) => {
       onClick={() => alert(`${casilla.orientacion + casilla.tipo}`)}
       className={`z-10  min-h-[3rem] min-w-[3rem]  border border-amber-700 shadow-lg shadow-gray-900 flex items-center justify-center ${getBackgroundColor()} ${getBorderRadius()}  `}
     >
+      <p className="absolute">{casilla.id}</p>
       {casilla.tipo === CasillaTypeEnum.TRIANGULO ? (
         <div className="relative">
           <div className="absolute z-10 left-0 right-0 top-0 bottom-0">
-            {casilla.ocupante && <FichaDisplay ficha={casilla.ocupante} />}
+            {casilla.ocupantes.length > 1 && (
+              <div className="absolute -top-7 left-1 border-2 border-blue-500 bg-blue-600 py-1 px-2 rounded-full z-10 flex items-center justify-center before:content-[''] before:absolute before:bottom-[-4px] before:left-1/2 before:-translate-x-1/2 before:w-2 before:h-2 before:bg-blue-600 before:rotate-45 shadow-lg">
+                <span className="text-xs font-semibold text-white">
+                  {casilla.ocupantes.length}
+                </span>
+              </div>
+            )}
+            {casilla.ocupantes.length > 0 && (
+              <FichaDisplay
+                key={casilla.ocupantes[casilla.ocupantes.length - 1].id}
+                ficha={casilla.ocupantes[casilla.ocupantes.length - 1]}
+              />
+            )}
           </div>
           <div
             className={`w-0 h-0 border-l-[1.25rem] border-l-transparent  border-r-[1.25rem] border-r-transparent border-b-[2.25rem]  ${getTriangleRotation()}`}
           ></div>
         </div>
       ) : (
-        <div className="text-xs text-slate-100">
-          {/* aqui va la ficha */}
-
-          {/* <p className="text-black text-xs">{casilla.id}</p>
-          <p className="text-black text-xs">
-            {casilla.posicion.X + "," + casilla.posicion.Y}
-          </p> */}
-          <p className="text-black text-xs">{casilla.id}</p>
-          {casilla.ocupante && <FichaDisplay ficha={casilla.ocupante} />}
+        <div className="relative">
+          <div className=" z-10  ">
+            {casilla.ocupantes.length > 1 && (
+              <div className="absolute -top-7 left-1 border-2 border-blue-500 bg-blue-600 py-1 px-2 rounded-full z-10 flex items-center justify-center before:content-[''] before:absolute before:bottom-[-4px] before:left-1/2 before:-translate-x-1/2 before:w-2 before:h-2 before:bg-blue-600 before:rotate-45 shadow-lg">
+                <span className="text-xs font-semibold text-white">
+                  {casilla.ocupantes.length}
+                </span>
+              </div>
+            )}
+            {casilla.ocupantes.length > 0 && (
+              <FichaDisplay
+                key={casilla.ocupantes[casilla.ocupantes.length - 1].id}
+                ficha={casilla.ocupantes[casilla.ocupantes.length - 1]}
+              />
+            )}
+          </div>
         </div>
       )}
     </div>

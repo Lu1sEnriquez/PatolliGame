@@ -9,6 +9,7 @@ import { DialogSettings } from "@/components/gameMenu/DialogSettings";
 import { IoSettingsSharp } from "react-icons/io5";
 import { Sounds } from "@/constants/sound";
 import { DialogConfigPartida } from "@/components/gameMenu/DialogConfigPartida";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const { playSound } = useSound();
@@ -24,7 +25,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 dark:bg-gray-900 bg-[url('/imgs/patolli.jpg')] bg-auto bg-center">
+    <div
+      className={cn(
+        // "bg-[url('/imgs/patolli.jpg')]",
+        "min-h-screen flex flex-col justify-center items-center bg-gray-100 dark:bg-gray-900  bg-auto bg-center"
+      )}
+    >
       {/* Cabecera del juego */}
       <Card className="p-6 mb-8 w-full max-w-md flex justify-between items-center shadow-lg bg-white dark:bg-gray-800">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
@@ -65,7 +71,7 @@ export default function Home() {
                   // Aquí puedes agregar la lógica para iniciar el juego
                 }}
               >
-                Unirse 
+                Unirse
               </Button>
             </DialogUnirsePartida>
             <Button
