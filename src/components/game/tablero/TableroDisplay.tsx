@@ -53,7 +53,7 @@ export const TableroDisplay = () => {
   return (
     <div
       className={cn(
-        // "rotate-180 transform scale-x-[-1]",
+        "rotate-180 transform scale-x-[-1]",
         " rounded-full  overflow-hidden shadow-customXl shadow-black"
       )}
     >
@@ -63,7 +63,7 @@ export const TableroDisplay = () => {
       </div> */}
       <div
         className={cn(
-          // "-rotate-45 ",
+          "-rotate-45 ",
           "grid gap-0.5 min-h-max min-w-max"
         )}
         style={{
