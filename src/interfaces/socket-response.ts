@@ -28,6 +28,8 @@ export enum SocketEvents {
   MOVER_FICHA_PAGANDO = 'mover_ficha_pagando',
   MOVER_FICHA_AUTOMATICO = 'mover_ficha_automatico',
   GANADOR = 'ganador',
+  PERDEDORES = 'perdedores',
+  TERMINAR_PARTIDA = 'terminar',
 }
 // Función para 200 OK
 export function ok<T>(
