@@ -25,8 +25,8 @@ interface Props {
 export const DialogConfigPartida = ({ children }: Props) => {
   const [codigo, setCodigo] = useState<string>("");
   const [username, setUsername] = useState<string>("");
-  const [fondoApuestaFijo, setFondoApuestaFijo] = useState<number>(100.0);
-  const [montoApuesta, setMontoApuesta] = useState<number>(50.0);
+  const [fondoApuestaFijo, setFondoApuestaFijo] = useState<number>(1000);
+  const [montoApuesta, setMontoApuesta] = useState<number>(100);
   const [coloresSeleccionado, setColoresSeleccionado] = useState<string[]>([
     UserColor.PRIMERO,
     UserColor.SEGUNDO,
@@ -49,6 +49,8 @@ export const DialogConfigPartida = ({ children }: Props) => {
   const handleCrearPartida = () => {
     if (!username) return alert("Ingresa tu nombre");
     if (!codigo) return alert("Ingresa un código de partida");
+    if (tableroSize % 2 !== 0)
+      return alert("el tamaño del tablero tiene que ser numero par");
 
     const data: Partial<Partida> = {
       codigo: codigo,
@@ -57,7 +59,7 @@ export const DialogConfigPartida = ({ children }: Props) => {
       montoApuesta: montoApuesta,
       fichasTotales: fichasTotales,
       colores: coloresSeleccionado, // Asumiendo que solo se selecciona un color por partida
-      tableroSize: tableroSize,
+      tableroSize: tableroSize + 2, // el mas dos es para que agregue las casillas centrales
       estado: estadoEnum.EN_ESPERA,
     };
 
@@ -107,26 +109,26 @@ export const DialogConfigPartida = ({ children }: Props) => {
           <Label>Código de Partida:</Label>
           <input
             type="text"
-            className="border p-2 rounded"
+            className="border p-2 rounded "
             placeholder="Código de Partida"
             value={codigo}
             onChange={(e) => setCodigo(e.target.value)}
           />
-          <div className="flex flex-row w-full">
-            <div>
+          <div className="grid grid-cols-2 gap-2 ">
+            <div className="flex flex-col justify-between gap-2">
               <Label>Fondo Apuesta Fijo:</Label>
               <input
                 type="number"
-                className="border p-2 rounded"
+                className="border p-2 rounded w-full"
                 value={fondoApuestaFijo}
                 onChange={(e) => setFondoApuestaFijo(Number(e.target.value))}
               ></input>
             </div>
-            <div>
+            <div className="flex flex-col justify-between gap-2">
               <Label>Monto Apuesta:</Label>
               <input
                 type="number"
-                className="border p-2 rounded"
+                className="border p-2 rounded w-full"
                 value={montoApuesta}
                 onChange={(e) => setMontoApuesta(Number(e.target.value))}
               />
@@ -134,7 +136,7 @@ export const DialogConfigPartida = ({ children }: Props) => {
           </div>
 
           <Label>Seleccionar Color:</Label>
-          <div className="flex flex-row justify-between">
+          <div className="grid grid-cols-2 md:grid-cols-4 justify-between">
             {coloresSeleccionado.map((color, index) => (
               <div key={index} className="flex flex-col items-center ">
                 <Label>{`Jugador ${index + 1}`}</Label>
@@ -148,21 +150,25 @@ export const DialogConfigPartida = ({ children }: Props) => {
             ))}
           </div>
 
-          <div className="flex flex-row w-full">
-            <div>
+          <div className="grid sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 items-center">
               <Label>Tamaño del Tablero:</Label>
               <input
                 type="number"
                 className="border p-2 rounded"
+                max={14}
+                min={8}
                 value={tableroSize}
                 onChange={(e) => setTableroSize(Number(e.target.value))}
               />
             </div>
-            <div>
+            <div className="grid grid-cols-2 gap-2 items-center">
               <Label>Fichas Por Jugador:</Label>
               <input
                 type="number"
                 className="border p-2 rounded"
+                max={6}
+                min={2}
                 value={fichasTotales}
                 onChange={(e) => setFichasTotales(Number(e.target.value))}
               />
