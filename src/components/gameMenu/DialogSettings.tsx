@@ -10,7 +10,8 @@ import {
 import { Button } from "../ui/button";
 import { IoSettingsSharp } from "react-icons/io5";
 import SoundSettings from "./SoundSettings";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { usePartidaStore } from "@/store/game/store";
 
 interface Props {
   children?: ReactNode;
@@ -18,7 +19,7 @@ interface Props {
 
 export const DialogSettings = ({ children }: Props) => {
   const router = useRouter();
-
+  const { resetPartida } = usePartidaStore();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -37,7 +38,13 @@ export const DialogSettings = ({ children }: Props) => {
         <DialogTitle>Ajustes</DialogTitle>
         <DialogDescription>opciones de configuracion</DialogDescription>
         <SoundSettings></SoundSettings>
-        <Button variant={"destructive"} onClick={() => router.push("/")}>
+        <Button
+          variant={"destructive"}
+          onClick={async() => {
+            resetPartida();
+            router.push("/");
+          }}
+        >
           Salir
         </Button>
       </DialogContent>
