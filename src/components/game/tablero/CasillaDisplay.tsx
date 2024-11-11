@@ -91,10 +91,10 @@ export const CasillaDisplay = ({ casilla }: CasillaProps) => {
 
   return (
     <div
-      onClick={() => alert(`${casilla.orientacion + casilla.tipo}`)}
+      // onClick={() => alert(`${casilla.orientacion + casilla.tipo}`)}
       className={`z-10  min-h-[3rem] min-w-[3rem]  border border-amber-700 shadow-lg shadow-gray-900 flex items-center justify-center ${getBackgroundColor()} ${getBorderRadius()}  `}
     >
-      <p className="absolute">{casilla.id}</p>
+      {/* <p className="absolute">{casilla.id}</p> */}
       {casilla.tipo === CasillaTypeEnum.TRIANGULO ? (
         <div className="relative">
           <div className="absolute z-10 left-0 right-0 top-0 bottom-0">
