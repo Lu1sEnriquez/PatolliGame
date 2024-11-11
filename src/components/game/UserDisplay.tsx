@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaUserSlash } from "react-icons/fa";
 import { LuBean } from "react-icons/lu";
-import { SiJsonwebtokens } from "react-icons/si";
 import { CiWifiOff } from "react-icons/ci";
-import { Jugador } from "../../interfaces/Patolli";
+import { Jugador, Ficha } from "../../interfaces/Patolli";
+import { FichaDisplay } from "./tablero/FichaDisplay";
 
 export enum UserColor {
   PRIMERO = "#00aae6", //AZUL
@@ -18,9 +18,7 @@ interface UserProps {
 }
 
 export const UserDisplay = ({ jugador }: UserProps) => {
-  const [fichasArr] = useState<number[]>(
-    Array(jugador.fichas.length).fill(0) as number[]
-  );
+  const [fichasArr] = useState<Ficha[]>(jugador.fichas);
 
   return (
     <div className={`flex flex-row  gap-3 text-[${jugador.color}] z-10`}>
@@ -32,8 +30,11 @@ export const UserDisplay = ({ jugador }: UserProps) => {
             className="absolute -top-2 -right-3 text-yellow-500"
           />
         )}
-
-        <FaUser size={60} className="" />
+        {jugador.haPerdido ? (
+          <FaUserSlash size={60} />
+        ) : (
+          <FaUser size={60} className="" />
+        )}
         <p>{jugador.nombre}</p>
       </div>
 
@@ -47,13 +48,8 @@ export const UserDisplay = ({ jugador }: UserProps) => {
 
         {/* fichas */}
         <div className="grid grid-cols-3 gap-1 ">
-          {fichasArr.map((v, i) => (
-            <SiJsonwebtokens
-              key={i}
-              size={25}
-              color={jugador.color}
-              className="shadow-xl border rounded-full bg-foreground"
-            />
+          {fichasArr.map((ficha) => (
+            <FichaDisplay ficha={ficha} key={ficha.id} />
           ))}
         </div>
       </div>
