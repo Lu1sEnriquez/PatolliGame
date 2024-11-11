@@ -35,7 +35,9 @@ export const usePartidaStore = create<PartidaState>()(
             return {
               partida: {
                 ...state.partida,
-                jugadores: state.partida.jugadores.filter((j) => j.id !== jugadorId), // Filtra el jugador por ID
+                jugadores: state.partida.jugadores.filter(
+                  (j) => j.id !== jugadorId
+                ), // Filtra el jugador por ID
               },
             };
           }
@@ -48,15 +50,19 @@ export const usePartidaStore = create<PartidaState>()(
       merge: (persistedState: unknown, currentState) => {
         const mergedState: PartidaState = {
           ...currentState,
-          partida: null, // Asegúrate de que el valor predeterminado sea null
+          ...(persistedState as PartidaState), // Carga partida si existe en persistedState
         };
 
         // Asegúrate de que persistedState sea un objeto y contenga una propiedad 'partida'
-        if (typeof persistedState === "object" && persistedState !== null && 'partida' in persistedState) {
+        if (
+          typeof persistedState === "object" &&
+          persistedState !== null &&
+          "partida" in persistedState
+        ) {
           const partidaPersistida = persistedState.partida as Partida; // Tipo explícito
 
           // Verificar que la partidaPersistida tiene la forma esperada
-          if (partidaPersistida && 'codigo' in partidaPersistida) {
+          if (partidaPersistida && "codigo" in partidaPersistida) {
             mergedState.partida = partidaPersistida; // Asigna solo si tiene la forma correcta
           }
         }
