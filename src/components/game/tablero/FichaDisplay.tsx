@@ -41,8 +41,8 @@ export const FichaDisplay = ({ ficha }: FichaProps) => {
     pagoApuesta &&
     partida?.turnoActual == id &&
     !ficha.eliminada &&
-    ficha.color == jugador?.color &&
-    (ficha.casillasAvanzadas > 0 || cantidad == 1); // si la cantidad es ==1 puede sacar fichas faltantes si no no se activa
+    ficha.color == jugador?.color 
+    &&(ficha.casillasAvanzadas > 0 ); // si la cantidad es ==1 puede sacar fichas faltantes si no no se activa
   return (
     <div
       className={`z-10 relative col-span-1 row-span-1 flex items-center justify-center ${

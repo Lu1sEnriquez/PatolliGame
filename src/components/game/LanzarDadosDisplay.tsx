@@ -8,7 +8,13 @@ import { useJugadorStore } from "@/store/jugador/store";
 import React, { useState, useEffect } from "react";
 
 export const LanzarDadosDisplay = () => {
-  const [canas, setCanas] = useState<boolean[]>([false, false, false, false, false]);
+  const [canas, setCanas] = useState<boolean[]>([
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
   const [animando, setAnimando] = useState<boolean>(false);
   const [disable, setDisable] = useState<boolean>(false);
   const [mostrarPago, setMostrarPago] = useState<boolean>(false);
@@ -45,34 +51,48 @@ export const LanzarDadosDisplay = () => {
     playSound("/sounds/dados.mp3");
     setResultado(null);
     setAnimando(true);
-
+  
     let estadoFinalCañas: boolean[] = [];
     const interval = setInterval(() => {
       estadoFinalCañas = Array.from({ length: 5 }, () => Math.random() > 0.5);
       setCanas(estadoFinalCañas); // Actualizamos el estado para mostrar la animación
     }, 200);
-
+  
     setTimeout(() => {
       clearInterval(interval);
       setAnimando(false);
       const valorCasillas = calcularCasillas(estadoFinalCañas);
       setResultado(valorCasillas);
-
+  
       if (valorCasillas === 0) {
         playSound(Sounds.PERDER);
         setDisable(false);
       } else {
         playSound(Sounds.GANAR);
-        setMostrarPago(true);
-        setTiempoRestante(5); // Reinicia el temporizador a 5 segundos
+        
+        // Solo mostramos el botón de "Pagar Apuesta" si alguna ficha ha avanzado
+        const algunaFichaAvanzada = partida?.jugadores
+          .find((jugador) => jugador.id === id)
+          ?.fichas.some((ficha) => ficha.casillasAvanzadas > 0);
+  
+        if (algunaFichaAvanzada) {
+          setMostrarPago(true);
+          setTiempoRestante(5); // Reinicia el temporizador a 5 segundos
+        } else {
+          setMostrarPago(false);
+          handleLanzarDadosAutomatico(valorCasillas); // Lanzamos automáticamente si ninguna ficha ha avanzado
+        }
       }
     }, 3000);
   };
-
+  
   // Controla el temporizador para "Pagar Apuesta"
   useEffect(() => {
     if (mostrarPago && tiempoRestante > 0) {
-      const timer = setTimeout(() => setTiempoRestante(tiempoRestante - 1), 1000);
+      const timer = setTimeout(
+        () => setTiempoRestante(tiempoRestante - 1),
+        1000
+      );
       return () => clearTimeout(timer);
     } else if (mostrarPago && tiempoRestante === 0) {
       setPagoApuesta(false);
@@ -93,7 +113,9 @@ export const LanzarDadosDisplay = () => {
         <button
           disabled={disable}
           onClick={lanzarCanas}
-          className={`px-4 py-2 bg-blue-500 text-white rounded mb-4 ${disable ? "opacity-50" : ""}`}
+          className={`px-4 py-2 bg-blue-500 text-white rounded mb-4 ${
+            disable ? "opacity-50" : ""
+          }`}
         >
           Lanzar cañas
         </button>
@@ -111,7 +133,13 @@ export const LanzarDadosDisplay = () => {
           <div
             key={index}
             className={`w-12 h-12 flex items-center justify-center rounded border-2 ${
-              animando ? (cana ? "bg-yellow-500" : "bg-yellow-300") : cana ? "bg-green-500" : "bg-gray-300"
+              animando
+                ? cana
+                  ? "bg-yellow-500"
+                  : "bg-yellow-300"
+                : cana
+                ? "bg-green-500"
+                : "bg-gray-300"
             }`}
           >
             {cana ? "•" : ""}
