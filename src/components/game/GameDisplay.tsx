@@ -9,18 +9,38 @@ import { usePartidaStore } from "@/store/game/store"; // Importa tu store
 import { SocketEvents, SocketResponse } from "@/interfaces/socket-response";
 import { socket } from "@/lib/socket";
 import { estadoEnum, Jugador, Partida } from "@/interfaces/Patolli";
-import React from "react";
+import React, { useCallback } from "react";
 import { Button } from "../ui/button";
 import { useJugadorStore } from "@/store/jugador/store";
-import { LanzarDados } from "./LanzarDados";
+import { LanzarDadosDisplay } from "./LanzarDadosDisplay";
 import confetti from "canvas-confetti";
 import useSound from "@/hooks/useSound";
+import { useRouter } from "next/navigation";
 
 export const GameDisplay = () => {
-  const { partida, setPartida } = usePartidaStore();
+  const { partida, setPartida, resetPartida } = usePartidaStore();
   const { name, id } = useJugadorStore();
   const { playSound } = useSound();
   // Importa la biblioteca de confeti que estés utilizando (ej: confetti.js)
+  const router = useRouter();
+
+  // Usa una bandera para verificar si el estado persistente se ha cargado
+  const partidaStoreCargada = usePartidaStore.persist?.hasHydrated();
+  const jugadorStoreCargado = useJugadorStore.persist?.hasHydrated();
+
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    if (partidaStoreCargada && jugadorStoreCargado) {
+      setIsLoaded(true); // Marcar como cargado cuando ambos stores estén listos
+    }
+  }, [partidaStoreCargada, jugadorStoreCargado]);
+
+  React.useEffect(() => {
+    if (isLoaded && !partida) {
+      router.push("/");
+    }
+  }, [isLoaded, partida, router]);
 
   // Función para lanzar el confetti con muchos efectos
   const lanzarConfetti = () => {
@@ -51,40 +71,66 @@ export const GameDisplay = () => {
     }, 600);
   };
 
-  const handleHayGanador = (response: SocketResponse<Jugador | null>) => {
-    const jugador = response.data;
+  const limpiarPartida = useCallback(() => {
+    console.log("terminar partida");
+    resetPartida();
+    router.push("/");
+    Swal.fire({
+      icon:"error",
+      title:"partida Terminada"
+    })
+  }, [resetPartida, router]);
 
-    if (jugador && jugador?.id == id) {
-      // Mostrar confetti
+  const handleTerminarPartida = useCallback(() => {
+    socket.emit(
+      SocketEvents.TERMINAR_PARTIDA,
+      JSON.stringify({ codigo: partida?.codigo }),
+      (response: SocketResponse<Partida | null>) => {
+        if (response.success && response.data) {
+          limpiarPartida();
+        }
+      }
+    );
+  }, [limpiarPartida, partida?.codigo]);
 
-      playSound("/sounds/win.mp3");
-      // Mostrar el modal de SweetAlert
-      lanzarConfetti();
-      Swal.fire({
-        title: `¡Felicidades, ${jugador.nombre}!`,
-        text: "¡Eres el ganador!",
-        icon: "success",
-        confirmButtonText: "Aceptar",
-        backdrop: true,
-        willClose: () => {
-          // Puedes añadir más lógica aquí si es necesario
-        },
-      });
-     
-    } else if (jugador && jugador.id != id) {
-      playSound("/sounds/perder.mp3");
-      Swal.fire({
-        title: `Lo siento, ${name}`,
-        text: "¡Has perdido, mejor suerte la próxima vez!",
-        icon: "error",
-        confirmButtonText: "Aceptar",
-        backdrop: true,
-        willClose: () => {
-          // Puedes añadir más lógica aquí si es necesario
-        },
-      });
-    }
-  };
+  const handleHayGanador = useCallback(
+    (response: SocketResponse<Jugador | null>) => {
+      const jugador = response.data;
+
+      if (jugador && jugador?.id == id) {
+        // Mostrar confetti
+
+        playSound("/sounds/win.mp3");
+        // Mostrar el modal de SweetAlert
+        lanzarConfetti();
+        Swal.fire({
+          title: `¡Felicidades, ${jugador.nombre}!`,
+          text: "¡Eres el ganador!",
+          icon: "success",
+          confirmButtonText: "Aceptar",
+          backdrop: true,
+          willClose: () => {
+            // Puedes añadir más lógica aquí si es necesario
+            handleTerminarPartida();
+          },
+        });
+      } else if (jugador && jugador.id != id) {
+        playSound("/sounds/perder.mp3");
+        Swal.fire({
+          title: `Lo siento, ${name}`,
+          text: "¡Has perdido, mejor suerte la próxima vez!",
+          icon: "error",
+          confirmButtonText: "Aceptar",
+          backdrop: true,
+          willClose: () => {
+            // Puedes añadir más lógica aquí si es necesario
+            handleTerminarPartida();
+          },
+        });
+      }
+    },
+    [handleTerminarPartida, id, name, playSound]
+  );
 
   const handleIniciarPartida = () => {
     socket.emit(
@@ -98,6 +144,7 @@ export const GameDisplay = () => {
       }
     );
   };
+
   React.useEffect(() => {
     // Escuchar el evento de jugador unido
     const handleUpdatePartida = (response: SocketResponse<Partida | null>) => {
@@ -123,18 +170,18 @@ export const GameDisplay = () => {
           timer: 3000, // Duración de la alerta antes de que se cierre automáticamente (en milisegundos)
           toast: true, // Hace que la alerta se muestre como un toast
         });
+      } else {
+        Swal.fire({
+          title: response.message,
+          icon: "error",
+          position: "top-end", // Posición de la alerta
+          showConfirmButton: false, // Oculta el botón de confirmación
+          timer: 3000, // Duración de la alerta antes de que se cierre automáticamente (en milisegundos)
+          toast: true, // Hace que la alerta se muestre como un toast
+        });
       }
     };
 
-    // const handleMoverFicha = (response: SocketResponse<Partida | null>) => {
-    //   if (response.success && response.data) {
-    //     console.log("Jugador unido:", response.data);
-    //     // alert(response.message);
-    //     setPartida(response.data); // Actualiza el estado con la nueva partida
-    //   } else {
-    //     console.error("Error al unir jugador:", response.message); // Usa console.error para errores
-    //   }
-    // };
     // Suscribirse al evento
     socket.on(SocketEvents.JUGADOR_UNIDO, handleUpdatePartida);
     socket.on(SocketEvents.MOVER_FICHA_PAGANDO, handleUpdatePartida);
@@ -143,6 +190,7 @@ export const GameDisplay = () => {
     socket.on(SocketEvents.INICIAR_PARTIDA, handleUpdatePartida);
     socket.on(SocketEvents.GANADOR, handleHayGanador);
     socket.on(SocketEvents.JUGADOR_DESCONECTADO, handleUpdatePartida);
+    socket.on(SocketEvents.TERMINAR_PARTIDA, limpiarPartida);
     // Limpiar la conexión y desuscribirse cuando el componente se desmonta
     return () => {
       socket.off(SocketEvents.JUGADOR_UNIDO, handleUpdatePartida);
@@ -150,9 +198,10 @@ export const GameDisplay = () => {
       socket.off(SocketEvents.MOVER_FICHA_PAGANDO, handleUpdatePartida);
       socket.off(SocketEvents.INICIAR_PARTIDA, handleUpdatePartida);
       socket.off(SocketEvents.GANADOR, handleHayGanador);
-      socket.on(SocketEvents.JUGADOR_DESCONECTADO, handleUpdatePartida);
+      socket.off(SocketEvents.JUGADOR_DESCONECTADO, handleUpdatePartida);
+      socket.off(SocketEvents.TERMINAR_PARTIDA, limpiarPartida);
     };
-  }, [setPartida]); // Si setPartida no cambia, podrías considerar omitirlo aquí
+  }, [handleHayGanador, setPartida, limpiarPartida]); // Si setPartida no cambia, podrías considerar omitirlo aquí
 
   if (!partida) {
     return <div>Cargando partida...</div>; // Manejo de estado si no hay partida
@@ -199,8 +248,8 @@ export const GameDisplay = () => {
                 : index === 1
                 ? "absolute bottom-0 right-0  w-[50%] h-[50%] flex justify-end items-end p-3"
                 : index === 2
-                ? "absolute top-0 left-0  w-[50%] h-[50%] flex items-start p-3"
-                : "absolute top-0 right-0  w-[50%] h-[50%] flex items-start justify-end p-3";
+                ? "absolute top-0 right-0  w-[50%] h-[50%] flex items-start justify-end p-3"
+                : "absolute top-0 left-0  w-[50%] h-[50%] flex items-start p-3";
 
             return (
               <div key={jugador.id} className={positionClass}>
@@ -224,11 +273,18 @@ export const GameDisplay = () => {
         {/* se muestra el boton de iniciar partida */}
         {partida.creadorNombre == name &&
           partida.estado == estadoEnum.EN_ESPERA && (
-            <Button onClick={handleIniciarPartida}>Empezar Partida</Button>
+            <div className="flex flex-row gap-2">
+              <Button variant={"destructive"} onClick={handleTerminarPartida}>
+                Cancelar
+              </Button>
+              <Button variant={"default"} onClick={handleIniciarPartida}>
+                Empezar{" "}
+              </Button>
+            </div>
           )}
         {/* se muestra el componente lanzar dados */}
         {partida.estado == estadoEnum.EN_CURSO &&
-          partida.turnoActual === id && <LanzarDados />}
+          partida.turnoActual === id && <LanzarDadosDisplay />}
       </div>
     </div>
   );
