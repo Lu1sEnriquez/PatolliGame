@@ -1,22 +1,36 @@
 import { Ficha, Partida } from "@/interfaces/Patolli";
-import { SiJsonwebtokens } from "react-icons/si";
-import { useJugadorStore } from "@/store/jugador/store";
-import { socket } from "@/lib/socket";
 import { SocketEvents, SocketResponse } from "@/interfaces/socket-response";
+import { socket } from "@/lib/socket";
 import { usePartidaStore } from "@/store/game/store";
+import { useJugadorStore } from "@/store/jugador/store";
+import { useEffect, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
+import { SiJsonwebtokens } from "react-icons/si";
 
 interface FichaProps {
   ficha: Ficha;
 }
-
 export const FichaDisplay = ({ ficha }: FichaProps) => {
   const { pagoApuesta, id, cantidad, setPagoApuesta } = useJugadorStore();
   const { partida, setPartida } = usePartidaStore();
 
+  const [activa, setActiva] = useState(false);
+
+  // Actualiza `activa` cuando cambian las dependencias relevantes
+  useEffect(() => {
+    const jugador = partida?.jugadores.find((jugador) => jugador.id === id);
+    const nuevaActiva =
+      pagoApuesta &&
+      partida?.turnoActual === id &&
+      !ficha.eliminada &&
+      ficha.color === jugador?.color &&
+      (ficha.casillasAvanzadas > 0 || cantidad === 1);
+
+    setActiva(nuevaActiva);
+  }, [pagoApuesta, partida, ficha, id, cantidad]);
+
   // Función para manejar la selección de una ficha
   const handleSelectFicha = () => {
-    // alert(`${pagoApuesta} ${partida?.turnoActual}  ${id}`);
     if (activa) {
       socket.emit(
         SocketEvents.MOVER_FICHA_PAGANDO,
@@ -30,19 +44,12 @@ export const FichaDisplay = ({ ficha }: FichaProps) => {
           if (response.data) {
             setPartida(response.data);
             setPagoApuesta(false);
-            // setDisable(false);
           }
         }
       );
     }
   };
-  const jugador = partida?.jugadores.find((jugador) => jugador.id == id);
-  const activa =
-    pagoApuesta &&
-    partida?.turnoActual == id &&
-    !ficha.eliminada &&
-    ficha.color == jugador?.color 
-    &&(ficha.casillasAvanzadas > 0 ); // si la cantidad es ==1 puede sacar fichas faltantes si no no se activa
+
   return (
     <div
       className={`z-10 relative col-span-1 row-span-1 flex items-center justify-center ${
